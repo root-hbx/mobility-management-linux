@@ -5,6 +5,8 @@
 
 Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile IP framework for Linux Ubuntu 22.04LTS, written in Python 3.10.
 
+---
+
 :fire: *News* :fire:
 
 - [2025-0309] MM-Sim is ready to go and smoothly works on Ubuntu 22.04 LTS with Python 3.10
