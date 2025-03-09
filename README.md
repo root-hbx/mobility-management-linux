@@ -61,8 +61,12 @@ pip install ntplib pyroute2 netaddr
 
 ```bash
 cd mobility-management-linux
-# with sudo privilege!!!
+# HOME AGENT: with sudo privilege!!!
 sudo $(which python3) -m examples.home_agent examples/ha.cfg
+# MOBILE NODE: with sudo privilege!!!
+# start
+sudo $(which python3) -m examples.mn_agent start examples/mn.cfg
+# Other args like: stop / register / deregister ...
 ```
 
 Then you can find:
@@ -113,9 +117,6 @@ Example below starts MN agent with `127.0.0.10` as a home address. MN will make 
 ```python
 import mip
 import logging
-
-def exception_handler(e):
-    logging.error("Error: %s", e)
 
 mn_agent = mip.MobileNodeAgent(
             mhae_spi=256,

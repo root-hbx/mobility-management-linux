@@ -28,14 +28,15 @@ import ast
 import sys
 import os
 
-ha = None
+home_agent = None
 
 
 def start_home_agent(config_filename):
-    global ha
+    global home_agent
 
     logging.info("Starting Home Agent.")
     
+    # This program requires root privileges
     if os.geteuid() != 0:
         logging.error("This program requires root privileges to run.")
         logging.error("Please run with sudo or as root.")
@@ -52,27 +53,28 @@ def start_home_agent(config_filename):
         logging.debug("HA authentications: %s", auth_table)
 
         # Creating and staring home agent object
-        ha = mip.HomeAgent(address=address, auth_table=auth_table)
-        ha.start()
+        home_agent = mip.HomeAgent(address=address, auth_table=auth_table)
+        home_agent.start()
 
-        # App loop
+        # Endless running
         while True:
             pass
-
     except (KeyboardInterrupt, SystemExit, mip.Error):
         logging.info("Exiting...")
     finally:
-        if ha is not None:
-            ha.stop()
+        if home_agent is not None:
+            home_agent.stop()
 
 
 def main(argv):
     if len(argv) < 1:
         logging.critical("Config file is not provided.")
+        logging.critical("Please start the node with a specified config file.")
+        logging.critical("Example: sudo $(which python3) -m examples.home_agent start examples/ha.cfg")
         return
 
     start_home_agent(argv[0])
 
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])
