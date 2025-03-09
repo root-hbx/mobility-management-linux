@@ -22,11 +22,12 @@
 """Mobile IP Home Agent"""
 
 import logging
-from classes import mip
-import configparser as cp
 import ast
 import sys
 import os
+
+import configparser as cparser
+from classes import mip_components as comp
 
 home_agent = None
 
@@ -44,7 +45,7 @@ def start_home_agent(config_filename):
 
     try:
         # Config file
-        config = cp.ConfigParser()
+        config = cparser.ConfigParser()
         config.read(config_filename)
         address = config.get("HomeAgent","address")
         auth_table = ast.literal_eval(config.get("HomeAgent","auth_table"))
@@ -53,13 +54,13 @@ def start_home_agent(config_filename):
         logging.debug("HA authentications: %s", auth_table)
 
         # Creating and staring home agent object
-        home_agent = mip.HomeAgent(address=address, auth_table=auth_table)
+        home_agent = comp.HomeAgent(address=address, auth_table=auth_table)
         home_agent.start()
 
         # Endless running
         while True:
             pass
-    except (KeyboardInterrupt, SystemExit, mip.Error):
+    except (KeyboardInterrupt, SystemExit, comp.Error):
         logging.info("Exiting...")
     finally:
         if home_agent is not None:

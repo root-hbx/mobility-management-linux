@@ -22,15 +22,14 @@
 """Mobile IP Mobile Node agent"""
 
 import logging
-from classes import mip
+import ast
 import sys
 import socket
-import configparser as cp
-import ast
 
+import configparser as cparser
+from classes import mip_components as comp
 
 MGMT_PORT = 9907
-
 stop = False # Stops app-loop if true
 mn_agent = None
 
@@ -90,7 +89,7 @@ def register(ifname):
             lifetime=1000,
             exception_handler=exception_handler
         )
-    except mip.RegistrationFailed:
+    except comp.RegistrationFailed:
         logging.error("Registration has failed.")
 
 def deregister():
@@ -108,7 +107,7 @@ def start_mn_agent(config_filename):
 
     try:
         # Config file
-        config = cp.ConfigParser()
+        config = cparser.ConfigParser()
         config.read(config_filename)
         spi = config.getint("MobileNodeAgent","spi")
         key = config.get("MobileNodeAgent","key")
@@ -118,16 +117,16 @@ def start_mn_agent(config_filename):
             config.get("MobileNodeAgent","if_gateways"))
 
         # Creating mobile node agent object
-        mn_agent = mip.MobileNodeAgent(
+        mn_agent = comp.MobileNodeAgent(
                     mhae_spi=spi, 
                     mhae_key=key,
                     home_agent=home_agent, 
                     home_address=home_address,
                     interfaces=if_gateways,
                     wait_for_dereg_reply=False,
-                    flags=(mip.RegRequestPacket.FLAG_D | 
-                        mip.RegRequestPacket.FLAG_G |
-                        mip.RegRequestPacket.FLAG_T)
+                    flags=(comp.RegRequestPacket.FLAG_D | 
+                        comp.RegRequestPacket.FLAG_G |
+                        comp.RegRequestPacket.FLAG_T)
                 )
 
         # App-loop, waiting for mgmt command
