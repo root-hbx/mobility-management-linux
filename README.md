@@ -3,7 +3,7 @@
 > aka. MM-Sim
 
 - Mobility Management
-- Mobile IP: MIPv4 and MIPv6
+- Mobile IP: MIPv4
 
 Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile IP framework for Linux Ubuntu 22.04LTS, written in Python 3.10.
 
@@ -11,6 +11,7 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 :fire: *News* :fire:
 
+- [2025-0310] Refactor! Refactor! Refactor!
 - [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10
 
 ## Overview
