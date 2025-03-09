@@ -9,16 +9,18 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 ---
 
-:fire: *News* :fire:
+🔥 *News* 🔥
 
 - [2025-0310] Refactor! Refactor! Refactor!
 - [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10
 
 ## Overview
 
-Mobile IP (MIP) framework allows transparent routing of IP packets to mobile nodes regardless of its current point of attachment in a the Internet. Thanks to MIP, mobile node is able to roam from an its home network to any foreign network, being always reachable through its home IP address.
+🚀 Mobile IP (MIP) framework allows transparent routing of IP packets to mobile nodes regardless of its current point of attachment in a the Internet. Thanks to MIP, mobile node is able to roam from an its home network to any foreign network, being always reachable through its home IP address.
 
-Following key features are supported:
+🌟 A brief introduction of Mobile IP is provided [here](https://docs.google.com/presentation/d/1uMKtgEIESeQTkul_gu7KrXnIFI3lo5WVHKnhKJMQ3ag/edit?usp=drive_link)
+
+🎉 Following key features are supported:
 
 * Mobile IP protocol (Registration Request and Reply)
 * Mobile-Home Authentication Extension (MHAE) with  the 128-bit key `HMAC-MD5` authentication algorithm
@@ -29,7 +31,7 @@ Following key features are supported:
 * GRE encapsulation
 * Identification based on timestamp
 
-Following key features are not supported:
+⚠️ Following key features are not supported:
 
 * Agent discovery and advertisement with ICMP
 * Foreign Agent entity
