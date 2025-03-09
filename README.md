@@ -1,6 +1,13 @@
-# Mobile IP implementation for Linux
+# Mobility Management Simulator
 
-Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile IP framework for Linux, written in Python 3.10.
+- Mobility Management
+- Mobile IP: MIPv4 and MIPv6
+
+Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile IP framework for Linux Ubuntu 22.04LTS, written in Python 3.10.
+
+:fire: *News* :fire:
+
+- [2025-0309] MM-Sim is ready to go and smoothly works on Ubuntu 22.04 LTS with Python 3.10
 
 ## Overview
 
@@ -39,14 +46,14 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-**Dependencies**:
+**Dependencies**
 
 ```bash
 # plz make sure you are under a python venv
 pip install ntplib pyroute2 netaddr
 ```
 
-**Run**:
+**Run**
 
 ```bash
 cd mobility-management-linux
@@ -127,9 +134,9 @@ while True:
 
 ## Related Work
 
-This repo is inspired by [mkiol's Mobile IP](https://github.com/mkiol/MobileIP)
+This repo is inspired by [mkiol's Mobile IP](https://github.com/mkiol/MobileIP) 🫡
 
-This project, developed by [Boxuan Hu](https://bxhu2004.com/), rectifies errors in previous work and upgrades the entire project from Python 2 to Python 3, incorporating a comprehensive restructuring.
+This project, developed by [Boxuan Hu](https://bxhu2004.com/), rectifies errors in previous work and upgrades the entire project from Python 2 to Python 3, incorporating a comprehensive restructuring. 🚀
 
-The project is currently stable on Linux Ubuntu 22.04 LTS and supports Python 3.10.
+The project is currently stable on Linux Ubuntu 22.04 LTS and supports Python 3.10. 🌟
 
