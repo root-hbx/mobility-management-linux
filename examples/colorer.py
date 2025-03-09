@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import logging
+import platform
+
 # now we patch Python code to add color support to logging.StreamHandler
 def add_coloring_to_emit_windows(fn):
         # add methods we need to the class
     def _out_handle(self):
         import ctypes
         return ctypes.windll.kernel32.GetStdHandle(self.STD_OUTPUT_HANDLE)
-    out_handle = property(_out_handle)
 
     def _set_color(self, code):
         import ctypes
@@ -92,7 +93,6 @@ def add_coloring_to_emit_ansi(fn):
         return fn(*args)
     return new
 
-import platform
 if platform.system()=='Windows':
     # Windows does not support ANSI escapes and we are using API calls to set the console color
     logging.StreamHandler.emit = add_coloring_to_emit_windows(logging.StreamHandler.emit)
@@ -101,8 +101,6 @@ else:
     logging.StreamHandler.emit = add_coloring_to_emit_ansi(logging.StreamHandler.emit)
     #log = logging.getLogger()
     #log.addFilter(log_filter())
-    #//hdlr = logging.StreamHandler()
-    #//hdlr.setFormatter(formatter())
 
 logging.basicConfig(level=logging.DEBUG,
     format="(%(levelname)s:%(funcName)s:%(lineno)s) \033[1m%(message)s\033[0m")

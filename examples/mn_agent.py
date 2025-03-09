@@ -22,12 +22,11 @@
 """Mobile IP Mobile Node agent"""
 
 import logging
-import mip
+from classes import mip
 import sys
 import socket
-import ConfigParser
+import configparser as cp
 import ast
-import colorer
 
 
 MGMT_PORT = 9907
@@ -104,7 +103,7 @@ def start_mn_agent(config_filename):
 
     try:
         # Config file
-        config = ConfigParser.ConfigParser()
+        config = cp.ConfigParser()
         config.read(config_filename)
         spi = config.getint("MobileNodeAgent","spi")
         key = config.get("MobileNodeAgent","key")

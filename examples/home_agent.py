@@ -22,9 +22,8 @@
 """Mobile IP Home Agent"""
 
 import logging
-import mip
-import colorer
-import ConfigParser
+from classes import mip
+import configparser as cp
 import ast
 import sys
 
@@ -38,7 +37,7 @@ def start_home_agent(config_filename):
 
     try:
         # Config file
-        config = ConfigParser.ConfigParser()
+        config = cp.ConfigParser()
         config.read(config_filename)
         address = config.get("HomeAgent","address")
         auth_table = ast.literal_eval(config.get("HomeAgent","auth_table"))

@@ -38,7 +38,7 @@ from ntplib import _to_int as timestamp_to_int
 from ntplib import _to_frac as timestamp_to_frac
 from ntplib import _to_time as timestamp_to_time
 from ntplib import system_to_ntp_time, ntp_to_system_time
-from pyroute2 import IPRoute, IPRouteRequest
+from pyroute2 import IPRoute
 from netaddr import IPAddress, IPNetwork
 
 
@@ -102,7 +102,7 @@ def _get_default_gw():
     if len(dr_list) > 0:
         ip = dr_list[0].get_attr("RTA_GATEWAY")
         oif = dr_list[0].get_attr("RTA_OIF")
-        met = dr.get_attr("RTA_PRIORITY")
+        met = dr_list[0].get_attr("RTA_PRIORITY")
         ifname = _ipr.get_links(oif)[0].get_attr("IFLA_IFNAME")
         return (ip, ifname, met)
     return (None, None, None)
@@ -929,7 +929,7 @@ class _Timer(threading.Thread):
         if not self.finished.is_set():
             try:
                 self.function(*self.args, **self.kwargs)
-            except Exception,e:
+            except Exception as e:
                 logging.error("Exception has been thrown in the Timer thread.")
                 logging.exception(e)
                 if self.exception_handler is not None:
@@ -1518,7 +1518,7 @@ class HomeAgent:
         """
 
         # Check if auth table is valid
-        if len(auth_table) is 0:
+        if len(auth_table) == 0:
             raise Error("Auth table is empty.")
 
         self.auth_table = auth_table
@@ -1584,7 +1584,7 @@ class HomeAgent:
             self._binding_table_lock.release()
         else:
             logging.warning("Unable to find binding for home address=%s.",
-                            home_address)
+                            reg_req_packet.home_address)
 
 
     def _create_binding(self, reg_req_packet):
