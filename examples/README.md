@@ -1,37 +1,56 @@
-# Examples
+# Instance Usage
+
+> Make sure you are under $mobility-management-linux when using these commands
+
+```bash
+# make sure
+cd $mobility-management-linux
+# activate .venv
+source .venv/bin/activate
+```
 
 ## Home Agent
 
 * `home_agent.py` - HA implementation
 * `ha.cfg` - HA configuration
 
-To start HA service, run following command:
-```
-# python home_agent.py ha.cfg
+**start HA service**
+
+```bash
+sudo $(which python3) -m examples.home_agent examples/ha.cfg
 ```
 
-## Mobile Node Agent
+## Mobile Node
 
 * `mn_agent.py` - MN implementation
 * `mn.cfg` - MN configuration
 
-To start MN service, run following command:
+**start MN service**
+
+```bash
+sudo $(which python3) -m examples.mn_agent start examples/mn.cfg
 ```
-# python mn_agent.py start mn.cfg
+
+**stop MN service**
+
+```bash
+sudo $(which python3) -m examples.mn_agent stop examples/mn.cfg
 ```
-to stop MN service:
+
+**register with `eth0` interface**
+
+```bash
+sudo $(which python3) -m examples.mn_agent register eth0
 ```
-$ python mn_agent.py stop mn.cfg
+
+**deregister**
+
+```bash
+sudo $(which python3) -m examples.mn_agent deregister
 ```
-to register using eth0 interface:
-```
-$ python mn_agent.py register eth0
-```
-to deregister:
-```
-$ python mn_agent.py deregister
-```
-to get status information:
-```
-$ python mn_agent.py status
+
+**get status info**
+
+```bash
+sudo $(which python3) -m examples.mn_agent status
 ```
