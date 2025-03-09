@@ -1,5 +1,7 @@
 # Mobility Management Simulator
 
+> aka. MM-Sim
+
 - Mobility Management
 - Mobile IP: MIPv4 and MIPv6
 
@@ -9,7 +11,7 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 :fire: *News* :fire:
 
-- [2025-0309] MM-Sim is ready to go and smoothly works on Ubuntu 22.04 LTS with Python 3.10
+- [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10
 
 ## Overview
 
@@ -139,6 +141,8 @@ while True:
 This repo is inspired by [mkiol's Mobile IP](https://github.com/mkiol/MobileIP) 🫡
 
 This project, developed by [Boxuan Hu](https://bxhu2004.com/), rectifies errors in previous work and upgrades the entire project from Python 2 to Python 3, incorporating a comprehensive restructuring. 🚀
+
+Modifications and additions are licensed under [MIT-License](https://en.wikipedia.org/wiki/MIT_License). For details on what changes were made, please refer to the commit history.
 
 The project is currently stable on Linux Ubuntu 22.04 LTS and supports Python 3.10. 🌟
 
