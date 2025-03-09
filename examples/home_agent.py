@@ -26,6 +26,7 @@ from classes import mip
 import configparser as cp
 import ast
 import sys
+import os
 
 ha = None
 
@@ -34,6 +35,11 @@ def start_home_agent(config_filename):
     global ha
 
     logging.info("Starting Home Agent.")
+    
+    if os.geteuid() != 0:
+        logging.error("This program requires root privileges to run.")
+        logging.error("Please run with sudo or as root.")
+        sys.exit(1)
 
     try:
         # Config file

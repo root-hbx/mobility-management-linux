@@ -317,7 +317,6 @@ def _destroy_interfaces(name_prefix):
 
 def get_ip_forward():
     """Return True if IP-Forward is enabled in the OS."""
-
     with open("/proc/sys/net/ipv4/ip_forward", "r") as f:
         value = True if int(f.read(1)) == 1 else False
     logging.debug("IP forward is %s.", "enabled" if value else "disabled")
@@ -326,10 +325,19 @@ def get_ip_forward():
 
 def set_ip_forward(value):
     """Enable or disable IP-Forward in the OS."""
-
-    with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
-        f.write("1\n" if value else "0\n")
-    logging.debug("IP forward has been %s.", "enabled" if value else "disabled")
+    try:
+        with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
+            f.write("1\n" if value else "0\n")
+        logging.debug("IP forward has been %s.", "enabled" if value else "disabled")
+    except PermissionError:
+        logging.error("Permission denied when trying to %s IP forwarding.", 
+                     "enable" if value else "disable")
+        logging.error("This operation requires root privileges.")
+        raise
+    except Exception as e:
+        logging.error("Failed to %s IP forwarding: %s", 
+                     "enable" if value else "disable", str(e))
+        raise
 
 
 def get_proxy_arp(ifname):
@@ -375,8 +383,10 @@ def int_to_ip(value):
 
 def str_to_hex(string):
     """Convert given string to hex string."""
-
-    return ":".join("{:02x}".format(ord(c)) for c in string)
+    if isinstance(string, bytes):
+        return ":".join("{:02x}".format(c) for c in string)
+    else:
+        return ":".join("{:02x}".format(ord(c)) for c in string)
 
 
 class Error(Exception):
@@ -496,7 +506,11 @@ class Packet:
         except struct.error:
             logging.error("Invalid MIP Mobile-Home Auth Extension fields.")
             raise Error("Invalid MIP Mobile-Home Auth Extension fields.")
-        extension.authenticator = hmac.new(key, packed).digest()
+        
+        if isinstance(key, str):
+            key = key.encode('utf-8')
+        
+        extension.authenticator = hmac.new(key, packed, digestmod='md5').digest()
         return extension
 
 
@@ -635,7 +649,7 @@ class RegRequestPacket(Packet):
 
     def _print_flags_desc(self):
         desc = ""
-        for key, value in RegRequestPacket._FLAG_DESC_TABLE.iteritems():
+        for key, value in RegRequestPacket._FLAG_DESC_TABLE.items():
             desc += value if self.flags & key else ""
         return desc
 
@@ -895,7 +909,7 @@ class _BindingChecker(threading.Thread):
             keys_to_handle = []
             self.lock.acquire()
             t = time.time()
-            for key, packet in self.binding_table.iteritems():
+            for key, packet in self.binding_table.items():
                 if 0 <= packet.expiration_date <= t:
                     keys_to_handle.append(key)
             self.lock.release()
@@ -1020,12 +1034,12 @@ class MobileNodeAgent:
     def __del__(self):
         """Mobile Node Agent destructor"""
 
-        # Destroying all mipX interfaces
-        _destroy_interfaces("mip")
-        if self._gateway is not None:
-            # Recreating original default routing
-            _add_route(dst="default", gw=self._gateway)
-            self._gateway = None
+        try:
+            _destroy_interfaces("mip") # Destroying all mipX interfaces
+            set_ip_forward(False) # Disabling kernel IP forwarding
+            set_proxy_arp_for_all(False) # Disabling Proxy ARP
+        except:
+            pass
 
 
     def _update_routes(self, ifname):
@@ -1536,12 +1550,14 @@ class HomeAgent:
             lifetime_expired_handler=self._lifetime_expired_handler)
 
 
-    def __del__():
+    def __del__(self):
         """Home Agent destructor"""
-
-        _destroy_interfaces("mip") # Destroying all mipX interfaces
-        set_ip_forward(False) # Disabling kernel IP forwarding
-        set_proxy_arp_for_all(False) # Disabling Proxy ARP
+        try:
+            _destroy_interfaces("mip") # Destroying all mipX interfaces
+            set_ip_forward(False) # Disabling kernel IP forwarding
+            set_proxy_arp_for_all(False) # Disabling Proxy ARP
+        except:
+            pass
 
 
     def _lifetime_expired_handler(self, reg_req_packet):
@@ -1557,7 +1573,7 @@ class HomeAgent:
         """Return registration binding table description."""
 
         desc = "{"
-        for key, value in self._binding_table.iteritems():
+        for key, value in self._binding_table.items():
             desc += "[home address=%s, CoA=%s]" % (key, value.care_of_address)
         return desc + "}"
 
@@ -1623,7 +1639,7 @@ class HomeAgent:
     def _get_binding_id(self, home_address):
         """Return id of registration binding for given Home Address."""
 
-        return self._binding_table.keys().index(home_address)
+        return list(self._binding_table.keys()).index(home_address)
 
 
     def _create_tunnel(self, reg_req_packet):
