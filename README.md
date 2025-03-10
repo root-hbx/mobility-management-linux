@@ -13,7 +13,7 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 - [2025-0311] All functions (`start/stop/register/deregister/status`) are ready to go!
 - [2025-0310] Refactor! Refactor! Refactor!
-- [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10
+- [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10 now
 
 ## Overview
 
@@ -73,9 +73,9 @@ sudo $(which python3) -m examples.mn_agent start examples/mn.cfg
 # Other args like: stop / register / deregister ...
 ```
 
-Congratulates! 👍
+Congratulates! Now HA and MN are started 👍
 
-More commands for HA and MN can be checked [here](./examples/README.md).
+More commands for exploring can be checked [here](./examples/README.md).
 
 ## Related Work
 
