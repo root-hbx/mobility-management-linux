@@ -41,7 +41,7 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 Basic use case that can be achieved with this implementation of MIP is shown on figure below.
 
-![](./doc/drawing.png)
+![](./doc/demo.png)
 
 ## Quick Start
 
