@@ -187,7 +187,10 @@ def _add_route(dst, gw):
     if _is_route_exists(dst):
         logging.warning("Route for dst=%s already exists. " +
                         "Deleting existing route.", dst)
-        _ipr.route("del", dst=dst)
+        try:
+            _ipr.route("del", dst=dst)
+        except Exception as e:
+            logging.warning("Failed to delete route %s: %s", dst, str(e))
 
     if dst == "default" or dst == "0.0.0.0":
         # Deleting all existing default routes

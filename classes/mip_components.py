@@ -9,6 +9,7 @@ import threading
 import time
 import socket
 import logging
+import os
 from netaddr import IPNetwork
 from .mip_commands import BindingChecker, Timer
 from ntplib import ntp_to_system_time
@@ -125,6 +126,12 @@ class MobileNodeAgent:
     def _update_routes(self, ifname):
         """Create or update static route to Home Agent IP address."""
 
+        # Checking if Home Agent is on loopback
+        if self.home_agent.startswith("127."):
+            logging.info("Home Agent is on loopback, skipping route updates.")
+            return
+        
+        # Getting default gateway
         gw = self._interfaces[ifname]
         if gw is None:
             logging.error("Unknown gateway address.")
@@ -307,9 +314,13 @@ class MobileNodeAgent:
             }
 
 
-    def register(self, care_of_address=None, dereg_existing_reg=True,
-                 lifetime=INFINITE_LIFETIME, ifname=None,
-                 exception_handler=None):
+    def register(self, 
+                 care_of_address=None, 
+                 dereg_existing_reg=True,
+                 lifetime=INFINITE_LIFETIME, 
+                 ifname=None,
+                 exception_handler=None
+    ):
         """Register Mobile Node Agent in Home Agent.
 
         Parameters:
@@ -406,12 +417,31 @@ class MobileNodeAgent:
                      "using %s interface.", self.home_agent, ifname)
         #logging.debug("care_of_address: %s, ifname: %s, prefixlen: %s",
         #              care_of_address, ifname, prefixlen)
+        #TODO(bxhu): test for local loopback address
+        # Prev:
+        # self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # self._socket.bind((care_of_address, 0))
+        # self._socket.setsockopt(socket.SOL_SOCKET,
+        #                         socket.SO_BINDTODEVICE, ifname.encode())
+        # Current:
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.bind((care_of_address, 0))
-        self._socket.setsockopt(socket.SOL_SOCKET,
-                                socket.SO_BINDTODEVICE, ifname)
+        if self.home_agent.startswith("127."):
+            logging.info("Home Agent is on loopback. Binding to loopback interface.")
+            # When accessing the local loopback address, 
+            # you do not need to bind to a specific interface,
+            # just use the loopback interface directly.
+            self._socket.bind(('127.0.0.1', 0))
+            logging.debug("Socket bound to: %s", str(self._socket.getsockname()))
+        else:
+            # Normally, bind to the external interface
+            self._socket.bind((care_of_address, 0))
+            self._socket.setsockopt(socket.SOL_SOCKET,
+                                socket.SO_BINDTODEVICE, ifname.encode())
+        
         self._send_packet(out_packet, (self.home_agent, self.port))
 
+        logging.info("Waiting for registration reply...")
+        
         # Listening for reply
         self._start_listening()
         self._lock.release()
@@ -470,7 +500,7 @@ class MobileNodeAgent:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self._socket.bind((address, 0))
             self._socket.setsockopt(socket.SOL_SOCKET,
-                                    socket.SO_BINDTODEVICE, ifname)
+                                    socket.SO_BINDTODEVICE, ifname.encode())
 
         logging.info("Sending Deregistration Request to %s (Home Agent) " +
                      "via %s interface.",
@@ -498,9 +528,8 @@ class MobileNodeAgent:
             self._num_of_retr_done += 1 # increasing counter
             logging.warning("Repeating request, #%d attempt.",
                          self._num_of_retr_done)
-            #self._sent_reg_reqest.update_identification()
-            self._sent_reg_reqest.add_mhae(self.mhae_spi, self.mhae_key)
 
+            self._sent_reg_reqest.add_mhae(self.mhae_spi, self.mhae_key)
             self._send_packet(self._sent_reg_reqest,
                               (self.home_agent, self.port))
         else:
@@ -633,7 +662,7 @@ class HomeAgent:
     def __del__(self):
         """Home Agent destructor"""
         try:
-            _destroy_interfaces("mip") # Destroying all mipX interfaces
+            _destroy_interfaces("haip") # Destroying all mipX interfaces
             set_ip_forward(False) # Disabling kernel IP forwarding
             set_proxy_arp_for_all(False) # Disabling Proxy ARP
         except:
@@ -726,18 +755,53 @@ class HomeAgent:
         """Create GRE tunnel for given RegRequestPacket."""
 
         tid = self._get_binding_id(reg_req_packet.home_address)
-        _create_tunnel(name="mip"+str(tid),
-                       ip=str(self._ip_pool[tid+1]),
-                       gre_local=self.address,
-                       gre_remote=reg_req_packet.care_of_address,
-                       route_dst=reg_req_packet.home_address+"/32")
+        tunnel_name = "haip"+str(tid)
+
+        # check if GRE tunneling is supported
+        gre_supported = False
+        try:
+            gre_check = os.popen("lsmod | grep gre").read()
+            if gre_check or os.path.exists("/proc/net/gre"):
+                gre_supported = True
+            else:
+                os.system("modprobe ip_gre 2>/dev/null")
+                gre_check = os.popen("lsmod | grep gre").read()
+                gre_supported = bool(gre_check)
+        except Exception:
+            pass
+
+        if not gre_supported:
+            logging.warning("GRE tunneling appears to be unsupported on this system. " +
+                        "Please check your system configuration...")
+
+        # check if tunnel interface already exists
+        try:
+            # if so, destroy it first
+            interfaces = os.popen("ip link show").read()
+            if f"{tunnel_name}:" in interfaces:
+                logging.info("Tunnel interface %s already exists. Destroying it first.", tunnel_name)
+                _destroy_interface(tunnel_name)
+        except Exception as e:
+            logging.warning("Error checking existing interfaces: %s", str(e))
+
+        try:
+            _create_tunnel(name=tunnel_name,
+                           ip=str(self._ip_pool[tid+1]),
+                           gre_local=self.address,
+                           gre_remote=reg_req_packet.care_of_address,
+                           route_dst=reg_req_packet.home_address+"/32")
+            logging.info("Successfully created tunnel %s", tunnel_name)
+        except Exception as e:
+            # robust
+            logging.error("Failed to create tunnel %s: %s", tunnel_name, str(e))
+            raise
 
 
     def _destroy_tunnel(self, reg_req_packet):
         """Destroy GRE tunnel for given RegRequestPacket."""
 
         tid = self._get_binding_id(reg_req_packet.home_address)
-        _destroy_interface(name="mip"+str(tid))
+        _destroy_interface(name="haip"+str(tid))
 
 
     def _send_packet(self, packet, addr):
@@ -897,11 +961,18 @@ class HomeAgent:
         if self._socket is not None:
             logging.warning("Home Agent is already started.")
             return
+
+        try:
+            _destroy_interfaces("mip")  # for mobile node interface
+            _destroy_interfaces("haip") # for home agent interface
+            os.system("sysctl -w net.ipv4.ip_forward=1")
+        except Exception as e:
+            logging.warning("Cleanup error: %s", str(e))
+
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.bind((self.address, self.port))
         self._binding_checker.start()
 
-        _destroy_interfaces("mip") # Destroying all mipX interfaces
         set_proxy_arp_for_all(True) # Enabling Proxy ARP
         set_ip_forward(True) # Enabling kernel IP forwarding
 
@@ -917,7 +988,8 @@ class HomeAgent:
         self._stopping = True
         self._binding_checker.stop()
 
-        _destroy_interfaces("mip") # Destroying all mipX interfaces
+        _destroy_interfaces("mip")  # for mobile node interface
+        _destroy_interfaces("haip") # for home agent interface
         set_ip_forward(False) # Disabling kernel IP forwarding
         set_proxy_arp_for_all(False) # Disabling Proxy ARP
 
