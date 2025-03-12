@@ -25,6 +25,10 @@ sudo ip link delete haip0
 sudo $(which python3) -m examples.home_agent examples/ha.cfg
 ```
 
+### stop HA service
+
+Just use `ctrl+c` in corresponding CLI window :))
+
 ![alt text](../doc/image-0.png)
 
 ## Mobile Node

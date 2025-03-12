@@ -6,6 +6,8 @@ This module contains the main Mobile IP protocol component implementations:
 """
 
 import threading
+import signal
+import sys
 import time
 import socket
 import logging
@@ -661,6 +663,16 @@ class HomeAgent:
             binding_table=self._binding_table,
             lifetime_expired_handler=self._lifetime_expired_handler)
 
+        # handle SIG
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, signum, frame):
+        """Signal handler for Home Agent."""
+        logging.info("Signal %d received. Stopping Home Agent.", signum)
+        logging.info("Destroying all interfaces...")
+        self.stop()
+        sys.exit(0)
 
     def __del__(self):
         """Home Agent destructor"""

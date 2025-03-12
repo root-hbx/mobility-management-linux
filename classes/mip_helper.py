@@ -314,7 +314,8 @@ def _destroy_interfaces(name_prefix):
 
     for link in _ipr.get_links():
         name = link.get_attr('IFLA_IFNAME')
-        if name[0:3] == name_prefix:
+        # name[0:3] for mip; name[0:4] for haip
+        if name[0:3] == name_prefix or name[0:4] == name_prefix:
             _destroy_interface(name)
 
 
