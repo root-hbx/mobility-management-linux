@@ -19,15 +19,13 @@ Currently HA only has a `start` service.
 ### start HA service
 
 ```bash
-# clear ha interfaces at first
-sudo ip link delete haip0
 # start ha service
 sudo $(which python3) -m examples.home_agent examples/ha.cfg
 ```
 
 ### stop HA service
 
-Just use `ctrl+c` in corresponding CLI window :))
+Just use `ctrl+c` in corresponding CLI window 🌟
 
 ![alt text](../doc/image-0.png)
 
