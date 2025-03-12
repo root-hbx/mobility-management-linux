@@ -35,12 +35,15 @@ mn_agent = None
 
 
 def start_app_loop():
-    # App loop, waiting for mgmt command
+    # App loop, waiting for mgmt UDP command
     mgmt_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Receive CLI-string from 127.0.0.1:MGMT_PORT
     mgmt_socket.bind(("127.0.0.1", MGMT_PORT))
     while not stop:
         logging.debug("Waiting for management command.")
         data, addr = mgmt_socket.recvfrom(1024)
+        # Handle received commands
+        # stop / register / deregister / cancel / status
         resp = mgmt_data_handler(data)
         if resp is not None:
             mgmt_socket.sendto(resp, addr)
@@ -52,29 +55,33 @@ def mgmt_data_handler(data):
     logging.debug("Command '%s' has been received.", data)
     argv = data.split()
 
+    # Stop mn service
     if argv[0] == "stop":
         stop_mn_agent()
         return
 
+    # Deregister from HA
     if argv[0] == "deregister":
         deregister()
         return
 
+    # MN cancel its registration
     if argv[0] == "cancel":
         cancel()
         return
 
+    # Show current MN's status
     if argv[0] == "status":
         data = str(mn_agent.get_status())
         logging.debug("Status is: %s", data)
         data_byte = data.encode('utf-8')
         return data_byte
 
+    # MN register itself to HA
     if argv[0] == "register":
         if len(argv) < 2:
             logging.error("Interface name is required for registration.")
             return
-
         register(argv[1])
         return
 
@@ -118,13 +125,13 @@ def start_mn_agent(config_filename):
 
         # Creating mobile node agent object
         mn_agent = comp.MobileNodeAgent(
-                    mhae_spi=spi, 
+                    mhae_spi=spi,
                     mhae_key=key,
-                    home_agent=home_agent, 
+                    home_agent=home_agent,
                     home_address=home_address,
                     interfaces=if_gateways,
                     wait_for_dereg_reply=False,
-                    flags=(comp.RegRequestPacket.FLAG_D | 
+                    flags=(comp.RegRequestPacket.FLAG_D |
                         comp.RegRequestPacket.FLAG_G |
                         comp.RegRequestPacket.FLAG_T)
                 )
@@ -140,11 +147,13 @@ def start_mn_agent(config_filename):
 
 def send_mgmt_command(data):
     logging.debug("Sending '%s' command.", data)
+    # Generate a UDP socket
     mgmt_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     data_bytes = data.encode('utf-8')
+    # Send CLI-string to 127.0.0.1:MGMT_PORT
     mgmt_socket.sendto(data_bytes, ("127.0.0.1", MGMT_PORT))
-
     argv = data.split()
+
     if argv[0] == "status":
         logging.debug("Waiting for response.")
         recv_data, addr = mgmt_socket.recvfrom(1024)
@@ -163,10 +172,11 @@ def exception_handler(e):
     stop = True
 
 def main(argv):
+    # Invalid CLI input, warning
     if len(argv) < 1:
-        # warning
+        # Warning
         logging.critical("No arguments is provided.")
-        # hints for args
+        # Hints for args
         logging.critical("Please use one of the following commands:")
         logging.critical("  start <config_file>  - Start Mobile Node with a specified config file")
         logging.critical("  stop                 - Stop a running Mobile Node")
@@ -177,6 +187,8 @@ def main(argv):
         logging.critical("Example: sudo $(which python3) -m examples.mn_agent start examples/mn.cfg")
         return
 
+    # Start Mobile Node Agent
+    # For `start` command, config file is required
     if argv[0] == "start":
         if len(argv) < 2:
             logging.critical("Config file is not provided.")
@@ -186,6 +198,8 @@ def main(argv):
         start_mn_agent(argv[1])
         return
 
+    # Other commands for Mobile Node Agent
+    # For `register` / `deregister` / `stop` / `status` commands
     send_mgmt_command(" ".join(argv))
 
 if __name__ == "__main__":

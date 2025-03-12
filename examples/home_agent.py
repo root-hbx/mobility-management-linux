@@ -42,6 +42,10 @@ def start_home_agent(config_filename):
         logging.error("This program requires root privileges to run.")
         logging.error("Please run with sudo or as root.")
         sys.exit(1)
+    '''
+    - os.geteuid() returns the effective user ID of the current process.
+    - root's effective user ID is 0.
+    '''
 
     try:
         # Config file

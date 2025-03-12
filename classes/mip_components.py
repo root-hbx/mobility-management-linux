@@ -36,7 +36,11 @@ from .mip_helper import (
 class MobileNodeAgent:
     """Mobile IP Mobile Node agent"""
 
-    def __init__(self, mhae_spi, mhae_key, home_agent, home_address,
+    def __init__(self, 
+                 mhae_spi, 
+                 mhae_key, 
+                 home_agent, 
+                 home_address,
                  interfaces,
                  port=434,
                  flags=(RegRequestPacket.FLAG_D |
@@ -45,8 +49,7 @@ class MobileNodeAgent:
                  timeout=3,
                  num_of_retr=2,
                  rereg_time=0.8,
-                 wait_for_dereg_reply=True,
-        ):
+                 wait_for_dereg_reply=True):
         """Mobile Node Agent constructor.
 
         Parameters:
