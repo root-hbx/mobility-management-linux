@@ -11,8 +11,9 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 🔥 *News* 🔥
 
+- [2025-0311] All functions (`start/stop/register/deregister/status`) are ready to go!
 - [2025-0310] Refactor! Refactor! Refactor!
-- [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10
+- [2025-0309] MM-Sim is supporting Ubuntu 22.04 LTS and Python 3.10 now
 
 ## Overview
 
@@ -40,7 +41,7 @@ Partial implementation of [RFC 5944](https://tools.ietf.org/html/rfc5944) Mobile
 
 Basic use case that can be achieved with this implementation of MIP is shown on figure below.
 
-![](./doc/drawing.png)
+![](./doc/demo.png)
 
 ## Quick Start
 
@@ -60,7 +61,7 @@ source .venv/bin/activate
 pip install ntplib pyroute2 netaddr
 ```
 
-**Run**
+**Start for HA and MN**
 
 ```bash
 cd mobility-management-linux
@@ -72,77 +73,9 @@ sudo $(which python3) -m examples.mn_agent start examples/mn.cfg
 # Other args like: stop / register / deregister ...
 ```
 
-Then you can find:
+Congratulates! Now HA and MN are started 👍
 
-```bash
-(.venv) huluobo@ubuntu-22:/Users/huluobo/Github_Content/MobileIP$ sudo $(which python3) -m examples.home_agent examples/ha.cfg
-(DEBUG:<module>:172) Exiting...
-/usr/lib/python3.10/runpy.py:126: RuntimeWarning: 'examples.home_agent' found in sys.modules after import of package 'examples', but prior to execution of 'examples.home_agent'; this may result in unpredictable behaviour
-warn(RuntimeWarning(msg))
-(INFO:start_home_agent:37) Starting Home Agent.
-(DEBUG:start_home_agent:51) HA address: 127.0.0.1
-(DEBUG:start_home_agent:52) HA authentications: {256: '1234567812345678'}
-(DEBUG:set_proxy_arp:359) Proxy ARP for eth0 interface has been enabled.
-(DEBUG:set_ip_forward:331) IP forward has been enabled.
-(INFO:start:1828) Home Agent is started.
-```
-
-Congratulates! 👍
-
-## Usage
-
-MIP implementation is in the single `mip.py` module. See [API documentation](https://github.com/mkiol/MobileIP/blob/master/doc/mip.html) and the examples below to learn how to create and start HA and MN agent.
-
-### Home Agent
-
-Example below starts HA service on `127.0.0.1` address and `434` UDP port. HA will accept Registration Requests with authorization `SPI=256 (0x100)` and `KEY="1234567812345678"`.
-
-```python
-import mip
-
-ha = mip.HomeAgent(
-      address="127.0.0.1",
-      port=434,
-      auth_table={256: "1234567812345678"}
-    )
-
-ha.start()
-
-# App loop
-while True:
-    pass
-```
-
-### Mobile Node
-
-Example below starts MN agent with `127.0.0.10` as a home address. MN will make use of `eth0` (default gateway is `10.1.2.5`) and `wlan0` (default gateway is `10.1.3.5`) network interfaces. MN will register its home address using `eth0` interface with lifetime 1000 seconds.
-
-```python
-import mip
-import logging
-
-mn_agent = mip.MobileNodeAgent(
-            mhae_spi=256,
-            mhae_key="1234567812345678",
-            home_agent="127.0.0.1",
-            home_address="127.0.0.10",
-            interfaces={"eth0": "10.1.2.5", "wlan0": "10.1.3.5"}
-        )
-
-mn_agent.register(
-        ifname="eth0", 
-        lifetime=1000,
-        exception_handler=exception_handler
-    )
-
-# App loop
-while True:
-    pass
-```
-
-### More
-
-More commands for HA and MN can be checked [here](./examples/README.md).
+More commands for exploring can be checked [here](./examples/README.md).
 
 ## Related Work
 
