@@ -66,6 +66,7 @@ def start_home_agent(config_filename):
             pass
     except (KeyboardInterrupt, SystemExit, comp.Error):
         logging.info("Exiting...")
+        home_agent.stop()
     finally:
         if home_agent is not None:
             home_agent.stop()
