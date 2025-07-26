@@ -53,6 +53,7 @@ def start_home_agent(config_filename):
         config.read(config_filename)
         address = config.get("HomeAgent","address")
         auth_table = ast.literal_eval(config.get("HomeAgent","auth_table"))
+        # TODO(bxhu): need to check if address is valid IP address
 
         logging.debug("HA address: %s", address)
         logging.debug("HA authentications: %s", auth_table)
